@@ -1,4 +1,4 @@
-let response, chunk, inputs;
+let response, chunk, inputs, hashedPassword;
 const
     express = require('express'),
     client = require('../Modules/database'),
@@ -52,7 +52,6 @@ router
                                                     SendMessage(`Your generated Password is: ${unique_id[0]}`,`${phoneNumber}`)
                                                     response = `END Your Generated Password is \n ${unique_id[0]}. A copy has been sent to ${phoneNumber} Via SMS.`
                                                 } else if (inputs[1] !== User.password) response = `END password mismatch.`
-
                                             }
                                     } else if (phoneNumber !== User.phonenumber) response = `END ${phoneNumber} is not a registered user.`
                                 })
@@ -63,9 +62,9 @@ router
                                     else if (phoneNumber !== User.phonenumber){
                                         response = `CON Enter Your name to be registered under ${phoneNumber}`
                                             if (inputs.length === 2 ){
+                                                hashedPassword = Hash(unique_id[1].toString())
                                                 SendMessage(`${inputs[1]} your registration is successful. Your 4 digit password is ${unique_id[1]}. Editing your password is possible.`,`${phoneNumber}`)
-                                                // hashing required
-                                                client.query( `INSERT INTO users(id, phoneNumber, fullName, password) VALUES(DEFAULT, '${phoneNumber}', '${inputs[1]}', '${unique_id[1]}')`)
+                                                client.query( `INSERT INTO users(id, phoneNumber, fullName, password) VALUES(DEFAULT, '${phoneNumber}', '${inputs[1]}', '${hashedPassword}')`, err => err ? console.log(err) : audit(phoneNumber))
                                                 response = `END ${phoneNumber} has been registered under ${inputs[1]}.`
                                             }
                                     }

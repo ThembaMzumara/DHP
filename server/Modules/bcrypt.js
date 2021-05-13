@@ -1,7 +1,7 @@
 const
     bcrypt = require('bcrypt'),
-    Hash = password => bcrypt.hash(password,10, err => err ? console.log(err) : console.log(`Hashing Complete`)),
-    Compare = password => bcrypt.compare(password,10, err => err ? console.log(err) : console.log(`Comparison Complete`))
+    Hash = passcode => bcrypt.hash(`'${passcode}'`,10, err => console.log(err)),
+    Compare = (passcode,hash) => bcrypt.compare(`${passcode}`,hash, err => console.log(err))
 
 module.exports = Hash;
 module.exports = Compare;
