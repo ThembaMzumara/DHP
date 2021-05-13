@@ -1,17 +1,18 @@
-let response, chunk, inputs, hashedPassword;
+let response, chunk, inputs;
 const
     express = require('express'),
+    bcrypt = require('bcrypt'),
     client = require('../Modules/database'),
     SendMessage = require('../Modules/twilio'),
     audit = require('../Modules/auditor'),
-    Hash = require('../Modules/bcrypt'),
-    Compare = require('../Modules/bcrypt'),
     unique_id = require('../Modules/uuid'),
     router = express.Router();
 
 router
 
-    .get('/', async (req,res)=> await res.send( `USSD RUNNING` ))
+    .get('/', async (req,res)=> {
+        await bcrypt.hash(`${unique_id[1]}`,10,(err, result) => err ? console.log(err) : res.send(`${unique_id[1]} hashed is ${result}`) )
+    })
 
     .post('/', async (req,res)=>{
         const { phoneNumber, text } = req.body
@@ -33,9 +34,9 @@ router
                                                 } else if (inputs[1] === 2){
                                                     response = `CON Enter your password.`
                                                         if (inputs.length === 3){
-                                                            if (inputs[2] === User.password){
+                                                            if (Compare(inputs[2], User.password)){
                                                                 // Edit user info
-                                                            } else if (inputs[2] !== User.password) response = `END password mismatch.`
+                                                            } else if (!Compare(inputs[2], User.password)) response = `END password mismatch.`
                                                         }
                                                 }
                                             }
@@ -62,9 +63,10 @@ router
                                     else if (phoneNumber !== User.phonenumber){
                                         response = `CON Enter Your name to be registered under ${phoneNumber}`
                                             if (inputs.length === 2 ){
-                                                hashedPassword = Hash(unique_id[1].toString())
                                                 SendMessage(`${inputs[1]} your registration is successful. Your 4 digit password is ${unique_id[1]}. Editing your password is possible.`,`${phoneNumber}`)
-                                                client.query( `INSERT INTO users(id, phoneNumber, fullName, password) VALUES(DEFAULT, '${phoneNumber}', '${inputs[1]}', '${hashedPassword}')`, err => err ? console.log(err) : audit(phoneNumber))
+                                                bcrypt.hash(`${unique_id}`,10, (err, result) => err ? console.log(err) :
+                                                    client.query( `INSERT INTO users(id, phoneNumber, fullName, password) VALUES(DEFAULT, '${phoneNumber}', '${inputs[1]}', '${result}')`, err => err ? console.log(err) : audit(phoneNumber))
+                                                )
                                                 response = `END ${phoneNumber} has been registered under ${inputs[1]}.`
                                             }
                                     }

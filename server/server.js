@@ -1,15 +1,16 @@
 const
     express = require('express'),
-    bodyParser = require('body-parser');
+    helmet = require('helmet'),
+    bodyParser = require('body-parser'),
 
 // Initializing application
     app = express();
 
 app
-
     // Middleware
+    .use(helmet())
     .use(bodyParser.json())
-    .use(bodyParser.urlencoded( { extended: true } ))
+    .use(bodyParser.urlencoded( { extended: false } ))
 
     // Routes
     .use('/', require('./Routes/USSD'))
