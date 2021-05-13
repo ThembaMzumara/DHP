@@ -1,9 +1,11 @@
 let response, chunk, inputs;
 const
     express = require('express'),
-    client = require('../Modules/Database'),
+    client = require('../Modules/database'),
     SendMessage = require('../Modules/twilio'),
     audit = require('../Modules/auditor'),
+    Hash = require('../Modules/bcrypt'),
+    Compare = require('../Modules/bcrypt'),
     unique_id = require('../Modules/uuid'),
     router = express.Router();
 
@@ -23,35 +25,47 @@ router
                         if ( parseInt( inputs[0] ) === 1 ){
                             chunk = await client.query( `SELECT * FROM users`)
                                 await chunk.rows.forEach( (User)=>{
-                                  if (phoneNumber === User.phonenumber){
-                                      response = `CON 1. View Medical Information \n 2. View/Edit Personal Information`
-                                        if (inputs.length === 2){
-                                            if (inputs[1] === 1){
-                                                // view medical info
-                                            } else if (inputs[1] === 2){
-                                                // Edit info
+                                    if (phoneNumber === User.phonenumber){
+                                        response = `CON 1. View Medical Information \n 2. View/Edit Personal Information`
+                                            if (inputs.length === 2){
+                                                if (inputs[1] === 1){
+                                                    // view medical info
+                                                } else if (inputs[1] === 2){
+                                                    response = `CON Enter your password.`
+                                                        if (inputs.length === 3){
+                                                            if (inputs[2] === User.password){
+                                                                // Edit user info
+                                                            } else if (inputs[2] !== User.password) response = `END password mismatch.`
+                                                        }
+                                                }
                                             }
-                                        }
-                                  } else if (phoneNumber !== User.phonenumber) response = `END ${phoneNumber} is not a registered user.`
+                                    } else if (phoneNumber !== User.phonenumber) response = `END ${phoneNumber} is not a registered user.`
                                 })
                         }
                         else if ( parseInt( inputs[0] ) === 2 ){
                             chunk = await client.query( `SELECT * FROM users`)
                                 chunk.rows.forEach((User)=>{
                                     if (phoneNumber === User.phonenumber){
-                                        SendMessage(`Your generated Password is: ${unique_id[0]}`,`${phoneNumber}`)
-                                        response = `END Your Generated Password is \n ${unique_id[0]}.\n A copy has been sent to ${phoneNumber} Via SMS.`
+                                        response = `CON Enter your password.`
+                                            if ( inputs.length === 2 ){
+                                                if (inputs[1] === User.password){
+                                                    SendMessage(`Your generated Password is: ${unique_id[0]}`,`${phoneNumber}`)
+                                                    response = `END Your Generated Password is \n ${unique_id[0]}. A copy has been sent to ${phoneNumber} Via SMS.`
+                                                } else if (inputs[1] !== User.password) response = `END password mismatch.`
+
+                                            }
                                     } else if (phoneNumber !== User.phonenumber) response = `END ${phoneNumber} is not a registered user.`
                                 })
                         } else if ( parseInt( inputs[0] ) === 3 ){
                             chunk = await client.query( `SELECT * FROM users`)
-                                await chunk.rows.forEach( (User)=>{
+                                await chunk.rows.forEach((User)=>{
                                     if (phoneNumber === User.phonenumber) response = `END ${phoneNumber} is already registered.`
                                     else if (phoneNumber !== User.phonenumber){
                                         response = `CON Enter Your name to be registered under ${phoneNumber}`
                                             if (inputs.length === 2 ){
-                                                SendMessage(`${inputs[1]} your registration is successful. Your 4 digit password is ${unique_id[1]}`,`${phoneNumber}`)
-                                                client.query( `INSERT INTO users(id, phoneNumber, fullName, password) VALUES(DEFAULT, '${phoneNumber}', '${inputs[1]}', '${unique_id[1]}')`, audit(phoneNumber))
+                                                SendMessage(`${inputs[1]} your registration is successful. Your 4 digit password is ${unique_id[1]}. Editing your password is possible.`,`${phoneNumber}`)
+                                                // hashing required
+                                                client.query( `INSERT INTO users(id, phoneNumber, fullName, password) VALUES(DEFAULT, '${phoneNumber}', '${inputs[1]}', '${unique_id[1]}')`)
                                                 response = `END ${phoneNumber} has been registered under ${inputs[1]}.`
                                             }
                                     }
