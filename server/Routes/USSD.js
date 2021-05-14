@@ -32,31 +32,30 @@ router
                                                             bcrypt.compare(`${inputs[2]}`, `${User.password}`, (err,result) =>{
                                                                 if (err) console.log(err)
                                                                 else {
-                                                                    if (result){}
-                                                                    else if (!result){}
+                                                                    if (result){ response = `END cool` }
+                                                                    else if (!result) response = `END Password Mismatch.`
                                                                     else response = `END An Error Occurred.`
                                                                 }
                                                             })
-                                                        } else response = `END An Error occurred`
+                                                        }
                                                 } else if ( parseInt( inputs[1] ) === 2){
                                                     response = `CON Enter your password.`
                                                         if (inputs.length === 3){
                                                             bcrypt.compare(`${inputs[2]}`, `${User.password}`, (err,result) =>{
                                                                 if (err) console.log(err)
                                                                 else {
-                                                                    if (result){}
-                                                                    else if (!result){}
+                                                                    if (result){ response = `END cool` }
+                                                                    else if (!result) response = `END Password Mismatch.`
                                                                     else response = `END An Error Occurred.`
                                                                 }
                                                             })
-                                                        } else response = `END An Error occurred`
+                                                        }
                                                 }
                                             }
                                     } else if (phoneNumber !== User.phonenumber) response = `END ${phoneNumber} is not a registered user.`
                                         else response = `END An error occurred.`
                                 })
-                        }
-                        else if ( parseInt( inputs[0] ) === 2 ){
+                        } else if ( parseInt( inputs[0] ) === 2 ){
                             chunk = await client.query( `SELECT * FROM users`)
                                 chunk.rows.forEach((User)=>{
                                     if (phoneNumber === User.phonenumber){
@@ -68,7 +67,7 @@ router
                                                         if (result){
                                                             SendMessage(`Your generated Password is: ${unique_id[0]}`,`${phoneNumber}`)
                                                             response = `END Your Generated Password is \n ${unique_id[0]}. A copy has been sent to ${phoneNumber} Via SMS.`
-                                                        } else if (!result) response = `END password Mismatch.`
+                                                        } else if (!result) response = `END Password Mismatch.`
                                                             else response = `END An error occurred.`
                                                     }
                                                 })
@@ -88,7 +87,7 @@ router
                                                     client.query( `INSERT INTO users(id, phoneNumber, fullName, password) VALUES(DEFAULT, '${phoneNumber}', '${inputs[1]}', '${result}')`, err => console.log(err))
                                                 )
                                                 response = `END ${phoneNumber} has been registered under ${inputs[1]}.`
-                                            } else response = `END An Error Occurred.`
+                                            }
                                     } else response = `END An Error occurred.`
                                 })
                         } else response = `END An Error Occurred.`
