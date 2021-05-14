@@ -32,7 +32,7 @@ router
                                                             bcrypt.compare(`${inputs[2]}`, `${User.password}`, (err,result) =>{
                                                                 if (err) console.log(err)
                                                                 else if (result) {}
-                                                                else if (!result) {}
+                                                                else if (!result) response = `END Password Mismatch.`
                                                             })
                                                         }
                                                 } else if ( parseInt( inputs[1] ) === 2){
@@ -41,7 +41,7 @@ router
                                                             bcrypt.compare(`${inputs[2]}`, `${User.password}`, (err,result) =>{
                                                                 if (err) console.log(err)
                                                                 else if (result) {}
-                                                                else if (!result) {}
+                                                                else if (!result) response = `END Password Mismatch.`
                                                             })
                                                         }
                                                 }
@@ -56,10 +56,10 @@ router
                                             if ( inputs.length === 2 ){
                                                 bcrypt.compare(`${inputs[1]}`, `${User.password}`, (err, result) =>{
                                                     if (err) console.log(err)
-                                                    else if (result) {
+                                                    else if (!result) {
                                                         SendMessage(`Your generated Password is: ${unique_id[0]}`,`${phoneNumber}`)
                                                         response = `END Your Generated Password is \n ${unique_id[0]}. A copy has been sent to ${phoneNumber} Via SMS.`
-                                                    } else if (!result) response = `END Password Mismatch.`
+                                                    } else if (result)  response = `END Password Mismatch.`
                                                  })
                                             }
                                     } else if (phoneNumber !== User.phonenumber) response = `END ${phoneNumber} is not a registered user.`
