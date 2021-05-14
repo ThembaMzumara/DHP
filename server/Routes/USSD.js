@@ -4,15 +4,12 @@ const
     bcrypt = require('bcrypt'),
     client = require('../Modules/database'),
     SendMessage = require('../Modules/twilio'),
-    audit = require('../Modules/auditor'),
     unique_id = require('../Modules/uuid'),
     router = express.Router();
 
 router
 
-    .get('/', async (req,res)=> {
-        await bcrypt.hash(`${unique_id[1]}`,10,(err, result) => err ? console.log(err) : res.send(`${unique_id[1]} hashed is ${result}`) )
-    })
+    .get('/', async (req,res)=>  await res.send(`USSD RUNNING`) )
 
     .post('/', async (req,res)=>{
         const { phoneNumber, text } = req.body
@@ -29,18 +26,34 @@ router
                                     if (phoneNumber === User.phonenumber){
                                         response = `CON 1. View Medical Information \n 2. View/Edit Personal Information`
                                             if (inputs.length === 2){
-                                                if (inputs[1] === 1){
-                                                    // view medical info
-                                                } else if (inputs[1] === 2){
+                                                if ( parseInt( inputs[1] ) === 1){
                                                     response = `CON Enter your password.`
                                                         if (inputs.length === 3){
-                                                            if (Compare(inputs[2], User.password)){
-                                                                // Edit user info
-                                                            } else if (!Compare(inputs[2], User.password)) response = `END password mismatch.`
-                                                        }
+                                                            bcrypt.compare(`${inputs[2]}`, `${User.password}`, (err,result) =>{
+                                                                if (err) console.log(err)
+                                                                else {
+                                                                    if (result){}
+                                                                    else if (!result){}
+                                                                    else response = `END An Error Occurred.`
+                                                                }
+                                                            })
+                                                        } else response = `END An Error occurred`
+                                                } else if ( parseInt( inputs[1] ) === 2){
+                                                    response = `CON Enter your password.`
+                                                        if (inputs.length === 3){
+                                                            bcrypt.compare(`${inputs[2]}`, `${User.password}`, (err,result) =>{
+                                                                if (err) console.log(err)
+                                                                else {
+                                                                    if (result){}
+                                                                    else if (!result){}
+                                                                    else response = `END An Error Occurred.`
+                                                                }
+                                                            })
+                                                        } else response = `END An Error occurred`
                                                 }
                                             }
                                     } else if (phoneNumber !== User.phonenumber) response = `END ${phoneNumber} is not a registered user.`
+                                        else response = `END An error occurred.`
                                 })
                         }
                         else if ( parseInt( inputs[0] ) === 2 ){
@@ -49,12 +62,19 @@ router
                                     if (phoneNumber === User.phonenumber){
                                         response = `CON Enter your password.`
                                             if ( inputs.length === 2 ){
-                                                if (inputs[1] === User.password){
-                                                    SendMessage(`Your generated Password is: ${unique_id[0]}`,`${phoneNumber}`)
-                                                    response = `END Your Generated Password is \n ${unique_id[0]}. A copy has been sent to ${phoneNumber} Via SMS.`
-                                                } else if (inputs[1] !== User.password) response = `END password mismatch.`
+                                                bcrypt.compare(`${inputs[1]}`, `${User.password}`, (err, result) =>{
+                                                    if (err) console.log(err)
+                                                    else {
+                                                        if (result){
+                                                            SendMessage(`Your generated Password is: ${unique_id[0]}`,`${phoneNumber}`)
+                                                            response = `END Your Generated Password is \n ${unique_id[0]}. A copy has been sent to ${phoneNumber} Via SMS.`
+                                                        } else if (!result) response = `END password Mismatch.`
+                                                            else response = `END An error occurred.`
+                                                    }
+                                                })
                                             }
                                     } else if (phoneNumber !== User.phonenumber) response = `END ${phoneNumber} is not a registered user.`
+                                        else response = `END An error occurred.`
                                 })
                         } else if ( parseInt( inputs[0] ) === 3 ){
                             chunk = await client.query( `SELECT * FROM users`)
@@ -65,11 +85,11 @@ router
                                             if (inputs.length === 2 ){
                                                 SendMessage(`${inputs[1]} your registration is successful. Your 4 digit password is ${unique_id[1]}. Editing your password is possible.`,`${phoneNumber}`)
                                                 bcrypt.hash(`${unique_id}`,10, (err, result) => err ? console.log(err) :
-                                                    client.query( `INSERT INTO users(id, phoneNumber, fullName, password) VALUES(DEFAULT, '${phoneNumber}', '${inputs[1]}', '${result}')`, err => err ? console.log(err) : audit(phoneNumber))
+                                                    client.query( `INSERT INTO users(id, phoneNumber, fullName, password) VALUES(DEFAULT, '${phoneNumber}', '${inputs[1]}', '${result}')`, err => console.log(err))
                                                 )
                                                 response = `END ${phoneNumber} has been registered under ${inputs[1]}.`
-                                            }
-                                    }
+                                            } else response = `END An Error Occurred.`
+                                    } else response = `END An Error occurred.`
                                 })
                         } else response = `END An Error Occurred.`
                     }
