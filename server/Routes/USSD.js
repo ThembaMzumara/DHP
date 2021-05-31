@@ -15,50 +15,31 @@ router
         const { phoneNumber, text } = req.body
 
             if ( text === '' ){
+                chunk = await client.query(`SELECT * FROM users`)
+                    await chunk.rows.forEach((User)=>{
+                        if ( phoneNumber === User.phonenumber ) response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View Information \n 2. Generate Random Password`
+                        else if ( phoneNumber !== User.phonenumber ) response = `END ${phoneNumber} is not a registered user.`
+                    })
+            }
+
+            if ( text !== '' ){
                 inputs = text.split('*')
-                    chunk = await client.query(`SELECT * FROM users`)
-                        await chunk.rows.forEach((User)=>{
-                            if ( phoneNumber === User.phonenumber ){
-                                response = `CON Welcome to Digital Health Passport Mobile View. Select your action \n 1. View Information \n 2. Generate Random Password`
-                                    if ( inputs.length === 1 ){
-                                        if ( parseInt(inputs[0]) === 1 ){
-                                            response = `CON 1. View Medical History \n 2. View/Edit Personal Information`
-                                                if ( inputs.length === 2 ){
-                                                    if ( parseInt(inputs[1]) === 1 ){
-                                                        response = `CON Enter Your Password.`
-                                                            if ( inputs.length === 3 ){
-                                                                bcrypt.compare(`${inputs[2]}`,User.password,err => {
-                                                                    if (err) console.log(err)
-                                                                    else response = `END ...`
-                                                                })
-                                                            }
-                                                    } else if ( parseInt(inputs[1]) === 2 ){
-                                                        response = `CON Enter Your Password.`
-                                                            if ( inputs.length === 3 ){
-                                                                bcrypt.compare(`${inputs[2]}`,User.password,err => {
-                                                                    if (err) console.log(err)
-                                                                    else response = `END ...`
-                                                                })
-                                                            }
-                                                    } else if ( parseInt(inputs[1]) !== 1 || 2 ) response = `END Invalid Input.`
-                                                    else response = `END An Error Occurred.`
-                                                }
-                                        } else if ( parseInt(inputs[0]) === 2 ){
-                                            response = `CON Enter Your Password.`
-                                                if ( inputs.length === 1 ){
-                                                    bcrypt.compare(`${inputs[1]}`,User.password,err => {
-                                                        if (err) console.log(err)
-                                                        else {
-                                                            SendMessage(`Your Generated Password is ${unique_id}`,`${phoneNumber}`)
-                                                            response = `END Your Generated password is ${unique_id}. A copy has been sent to ${phoneNumber} via SMS.`
-                                                        }
-                                                    })
-                                                }
-                                        } else if ( parseInt(inputs[0]) !== 1 || 2 ) response = `END Invalid Input.`
-                                        else response = `END An Error Occurred.`
-                                    } else if ( inputs.length === 0 ) response = `END An Error Occurred.`
-                            } else response = `END ${phoneNumber} is not a registered user.`
-                        })
+                    if (inputs.length > 0){
+                        if (parseInt(inputs[0]) === 1){
+                            response = `CON `
+                        } else if (parseInt(inputs[0]) === 2){
+                            response = `CON Enter Your PIN.`
+                                chunk = await client.query(`SELECT * FROM users WHERE phonenumber = '${phoneNumber}' `)
+                                    if (inputs.length > 1){
+                                        await chunk.rows.forEach((User)=> {
+                                            if (parseInt(inputs[1]) === parseInt(User.password)) {
+                                                SendMessage(`Your Requested Temporary password is ${unique_id}.`,`${phoneNumber}`)
+                                                response = `END Your Generated password is ${unique_id}. A copy has been sent to ${phoneNumber} via SMS.`
+                                            } else if (parseInt(inputs[1]) !== parseInt(User.password)) response = `END PIN MisMatch.`
+                                        })
+                                    }
+                        }
+                    } else if (inputs.length === 0) response = `END Invalid Input.`
             }
 
         setTimeout(()=>{ res .send(response) .end() },4000)
