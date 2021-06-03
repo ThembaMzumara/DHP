@@ -1,7 +1,7 @@
 {
   "name": "dhp",
   "version": "1.0.0",
-  "description": "",
+  "description": "USSD application for the DHP System",
   "main": "server/server.js",
   "scripts": {
     "dev": "nodemon server/server.js"
