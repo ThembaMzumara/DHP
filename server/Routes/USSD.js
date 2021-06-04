@@ -87,17 +87,17 @@ const
                     await chunk.rows.forEach( User =>{
                         if (parseInt(inputs[2]) === parseInt(User.password)){
                             response = `CON Enter Your New PIN.`
-                            if (inputs.length > 3){
-                                if (parseInt(inputs[3].length) >= 4){
-                                    client.query(`UPDATE users SET password = '${inputs[3]}' WHERE phonenumber = '${Phonenumber}'`, err =>{
-                                        if (err) console.log(err)
-                                        else {
-                                            SendMessage(`PIN updated successfully. Your New PIN is ${inputs[3]}.`,`${Phonenumber}`)
-                                            response = `END PIN Updated successfully. Your New PIN has been Sent to ${Phonenumber} via SMS.`
-                                        }
-                                    })
-                                } else if (parseInt(inputs[3].length) < 4) response = `END New PIN does not fit requirements. Try Again.`
-                            }
+                                if (inputs.length > 3){
+                                    if (parseInt(inputs[3].length) >= 4){
+                                        client.query(`UPDATE users SET password = '${inputs[3]}' WHERE phonenumber = '${Phonenumber}'`, err =>{
+                                            if (err) console.log(err)
+                                            else {
+                                                SendMessage(`PIN updated successfully. Your New PIN is ${inputs[3]}.`,`${Phonenumber}`)
+                                                    response = `END PIN Updated successfully. Your New PIN has been Sent to ${Phonenumber} via SMS.`
+                                            }
+                                        })
+                                    } else if (parseInt(inputs[3].length) < 4) response = `END New PIN does not fit requirements. Try Again.`
+                                }
                         } else if (parseInt(inputs[2]) !== parseInt(User.password)) response = `END PIN MisMatch`
                     })
             }
