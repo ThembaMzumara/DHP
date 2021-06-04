@@ -19,9 +19,7 @@ router
             if ( text !== '' ){
                 inputs = text.split('*')
                     if (inputs.length > 0){
-                        if (parseInt(inputs[0]) === 1) await UserInformation(phoneNumber)
-                        else if (parseInt(inputs[0]) === 2) await GenerateRandomPassword(phoneNumber)
-                        else response = `END Invalid Input.`
+                        (parseInt(inputs[0]) === 1) ? await UserInformation(phoneNumber) : (parseInt(inputs[0]) === 2) ? await GenerateRandomPassword(phoneNumber) : response = `END Invalid Input.`
                     } else if (inputs.length === 0) response = `END Invalid Input.`
             }
 
@@ -35,8 +33,7 @@ const
         chunk = await client.query(`SELECT * FROM users WHERE phonenumber = '${Phonenumber}'`)
             await chunk.rows.forEach( User =>{
                 if (User.length !== 0){
-                    if ( Phonenumber === User.phonenumber ) response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password.`
-                    else if ( Phonenumber !== User.phonenumber ) response = `END ${Phonenumber} is not a registered user.`
+                    ( Phonenumber === User.phonenumber ) ? response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password.` : response = `END Unknown Error.`
                 } else if (User.length === 0) response = `END ${Phonenumber} is not a registered user.`
             })
     },
@@ -52,20 +49,14 @@ const
         response = `CON Enter Your PIN.`
             if (inputs.length > 2){
                 chunk = await client.query(`SELECT * FROM users WHERE phonenumber = '${Phonenumber}'`)
-                    await chunk.rows.forEach( User =>{
-                        if (parseInt(inputs[2]) === parseInt(User.password)) response = `END User Data`
-                        else if (parseInt(inputs[2]) !== parseInt(User.password)) response = `END PIN MisMatch.`
-                    })
+                    await chunk.rows.forEach( User => (parseInt(inputs[2]) === parseInt(User.password)) ? response = `END User Data.` : (parseInt(inputs[2]) !== parseInt(User.password)) ? response = `END PIN MisMatch.` : response = `END Unknown Error.`)
             }
     },
     DisplayUserData = async Phonenumber =>{
         response = `CON Enter Your Pin`
             if (inputs.length > 2){
                 chunk = await client.query(`SELECT * FROM users WHERE phonenumber = '${Phonenumber}'`)
-                    await chunk.rows.forEach( User =>{
-                        if (parseInt(inputs[2]) === parseInt(User.password)) response = `END ${Phonenumber} is registered under ${User.fullname} born on DOB stays at LOCATION.`
-                        else if (parseInt(inputs[2]) !== parseInt(User.password)) response = `END PIN MisMatch.`
-                    })
+                    await chunk.rows.forEach( User => (parseInt(inputs[2]) === parseInt(User.password)) ? response = `END ${Phonenumber} is registered under ${User.fullname} born on DOB stays at LOCATION.` : (parseInt(inputs[2]) !== parseInt(User.password)) ? response = `END PIN MisMatch.` : response = `END Unknown Input.`)
             }
     },
     GenerateRandomPassword = async Phonenumber =>{
