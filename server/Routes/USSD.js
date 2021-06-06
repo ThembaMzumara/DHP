@@ -35,8 +35,7 @@ const
                 result.rows.forEach( User => {
                     if (User.length !== 0){
                         Phonenumber === User.phonenumber ? response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password.` : response = `END Unknown Error.`
-                    } else if (User.length === 0) response = `END ${Phonenumber} is not a registered user.` })
-        })
+                    } else if (User.length === 0) response = `END ${Phonenumber} is not a registered user.` }) })
     },
     UserInformation = async Phonenumber =>{
         response = `CON 1. View Medical History. \n 2. View Personal Information. \n 3. Edit PIN.`
