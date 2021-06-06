@@ -18,9 +18,9 @@ router
 
             if ( text !== '' ){
                 inputs = text.split('*')
-                    if (inputs.length > 0){
+                    inputs.length > 0 ?
                         parseInt(inputs[0]) === 1 ? await UserInformation(phoneNumber) : parseInt(inputs[0]) === 2 ? await GenerateRandomPassword(phoneNumber) : response = `END Invalid Input.`
-                    } else if (inputs.length === 0) response = `END Invalid Input.`
+                    : response = `END No Input Found. Please Select An Option.`
             }
 
         setTimeout(() =>{ res.send(response).end() },4000)
@@ -33,9 +33,11 @@ const
         await client.query(`SELECT * FROM users WHERE phonenumber = '${Phonenumber}'`, (err, result) => {
             err ? console.log(err) :
                 result.rows.forEach( User => {
-                    if (User.length !== 0){
+                    User.length !== 0 ?
                         Phonenumber === User.phonenumber ? response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password.` : response = `END Unknown Error.`
-                    } else if (User.length === 0) response = `END ${Phonenumber} is not a registered user.` }) })
+                    : response = `END ${Phonenumber} is not a registered user.`
+                })
+        })
     },
     UserInformation = async Phonenumber =>{
         response = `CON 1. View Medical History. \n 2. View Personal Information. \n 3. Edit PIN.`
@@ -49,13 +51,15 @@ const
         response = `CON Enter Your PIN.`
             if (inputs.length > 2) await client.query(`SELECT * FROM users WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
                 err ? console.log(err) :
-                    result.rows.forEach( User => parseInt(inputs[2]) === parseInt(User.password) ? response = `END User Data.` : parseInt(inputs[2]) !== parseInt(User.password) ? response = `END PIN MisMatch.` : response = `END Unknown Error.`) })
+                    result.rows.forEach( User => parseInt(inputs[2]) === parseInt(User.password) ? response = `END User Data.` : parseInt(inputs[2]) !== parseInt(User.password) ? response = `END PIN MisMatch.` : response = `END Unknown Error.`)
+            })
     },
     DisplayUserData = async Phonenumber =>{
         response = `CON Enter Your Pin`
             if (inputs.length > 2) await client.query(`SELECT * FROM users WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
                 err ? console.log(err) :
-                    result.rows.forEach( User => parseInt(inputs[2]) === parseInt(User.password) ? response = `END ${Phonenumber} is registered under ${User.fullname} born on DOB stays at LOCATION.` : parseInt(inputs[2]) !== parseInt(User.password) ? response = `END PIN MisMatch.` : response = `END Unknown Input.`) })
+                    result.rows.forEach( User => parseInt(inputs[2]) === parseInt(User.password) ? response = `END ${Phonenumber} is registered under ${User.fullname} born on DOB stays at LOCATION.` : parseInt(inputs[2]) !== parseInt(User.password) ? response = `END PIN MisMatch.` : response = `END Unknown Input.`)
+            })
     },
     GenerateRandomPassword = async Phonenumber =>{
         response = `CON Enter Your PIN.`
@@ -66,7 +70,9 @@ const
                             if (parseInt(inputs[1]) === parseInt(User.password)) {
                                 SendMessage(`Your Requested Temporary password is ${unique_id}.`,`'${Phonenumber}'`)
                                     response = `END Your Generated password is ${unique_id}. A copy has been sent to ${Phonenumber} via SMS.`
-                            } else if (parseInt(inputs[1]) !== parseInt(User.password)) response = `END PIN MisMatch.` }) })
+                            } else if (parseInt(inputs[1]) !== parseInt(User.password)) response = `END PIN MisMatch.`
+                        })
+                })
             }
     },
     UpdatePIN = async Phonenumber =>{
@@ -81,13 +87,15 @@ const
                                         if (parseInt(inputs[3].length) >= 4){
                                             client.query(`UPDATE users SET password = '${inputs[3]}' WHERE phonenumber = '${Phonenumber}'`, err =>{
                                                 if (err) console.log(err)
-                                                else {
-                                                    SendMessage(`PIN updated successfully. Your New PIN is ${inputs[3]}.`,`${Phonenumber}`)
-                                                        response = `END PIN Updated successfully. Your New PIN has been Sent to ${Phonenumber} via SMS.`
-                                                }
+                                                    else {
+                                                        SendMessage(`PIN updated successfully. Your New PIN is ${inputs[3]}.`,`${Phonenumber}`)
+                                                            response = `END PIN Updated successfully. Your New PIN has been Sent to ${Phonenumber} via SMS.`
+                                                    }
                                             })
                                         } else if (parseInt(inputs[3].length) < 4) response = `END New PIN does not fit requirements. Try Again.`
                                     }
-                            } else if (parseInt(inputs[2]) !== parseInt(User.password)) response = `END PIN MisMatch` }) })
+                            } else if (parseInt(inputs[2]) !== parseInt(User.password)) response = `END PIN MisMatch`
+                        })
+                })
             }
     };
