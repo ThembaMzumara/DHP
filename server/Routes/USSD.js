@@ -67,9 +67,7 @@ const
                             if (parseInt(inputs[1]) === parseInt(User.password)) {
                                 SendMessage(`Your Requested Temporary password is ${unique_id}.`,`'${Phonenumber}'`)
                                     response = `END Your Generated password is ${unique_id}. A copy has been sent to ${Phonenumber} via SMS.`
-                            } else if (parseInt(inputs[1]) !== parseInt(User.password)) response = `END PIN MisMatch.`
-                        })
-                })
+                            } else if (parseInt(inputs[1]) !== parseInt(User.password)) response = `END PIN MisMatch.` }) })
             }
     },
     UpdatePIN = async Phonenumber =>{
@@ -91,8 +89,6 @@ const
                                             })
                                         } else if (parseInt(inputs[3].length) < 4) response = `END New PIN does not fit requirements. Try Again.`
                                     }
-                            } else if (parseInt(inputs[2]) !== parseInt(User.password)) response = `END PIN MisMatch`
-                        })
-                })
+                            } else if (parseInt(inputs[2]) !== parseInt(User.password)) response = `END PIN MisMatch` }) })
             }
     };
