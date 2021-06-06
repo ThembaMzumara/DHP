@@ -42,8 +42,8 @@ const
         response = `CON 1. View Medical History. \n 2. View Personal Information. \n 3. Edit PIN.`
             if (inputs.length > 0){
                 if (parseInt(inputs[1]) === 1) await DisplayMedicalHistory(Phonenumber)
-                else if (parseInt(inputs[1]) === 2) await DisplayUserData(Phonenumber)
-                else if (parseInt(inputs[1]) === 3) await UpdatePIN(Phonenumber)
+                    else if (parseInt(inputs[1]) === 2) await DisplayUserData(Phonenumber)
+                        else if (parseInt(inputs[1]) === 3) await UpdatePIN(Phonenumber)
             }
     },
     DisplayMedicalHistory = async Phonenumber =>{
@@ -51,7 +51,6 @@ const
             if (inputs.length > 2) await client.query(`SELECT * FROM users WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
                 err ? console.log(err) :
                     result.rows.forEach( User => parseInt(inputs[2]) === parseInt(User.password) ? response = `END User Data.` : parseInt(inputs[2]) !== parseInt(User.password) ? response = `END PIN MisMatch.` : response = `END Unknown Error.`) })
-
     },
     DisplayUserData = async Phonenumber =>{
         response = `CON Enter Your Pin`
