@@ -9,7 +9,7 @@ const
 
 router
 
-    .get('/', async (req,res) => await res.send(`USSD SERVER RUNNING`) )
+    .get('/', async (req,res) => await res.send(`USSD SERVER RUNNING...`) )
 
     .post('/', async (req,res) => {
         const { phoneNumber, text } = req.body
