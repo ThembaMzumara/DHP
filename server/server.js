@@ -12,8 +12,9 @@ app
     .use(bodyParser.json())
     .use(bodyParser.urlencoded( { extended: false } ))
 
-    // Routes
-    .use('/', require('./Routes/USSD'))
+    // ROUTES
+    .use('/', require('./ROUTES/USSD'))
+    .use('/api', require('./API/DATA'))
 
     // Port
     .listen( process.env.PORT || 1111, err => err ? console.log(err) : console.log(`Server Up and Running in ${process.env.NODE_ENV} mode on Port: ${process.env.PORT || 1111}`.toUpperCase() )  )
