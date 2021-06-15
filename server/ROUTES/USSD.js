@@ -11,27 +11,23 @@ router
 
     .get('/', async (req,res) => await res.send(`USSD SERVER RUNNING...`) )
 
-    .post('/', async (req,res) => {
+    .post('/', async (req,res) =>{
         const { phoneNumber, text } = req.body
-
-            if ( text === '' ) await DisplayHomeScreen(phoneNumber)
-
-            if ( text !== '' ){
-                inputs = text.split('*')
-                    if (inputs.length > 0) parseInt(inputs[0]) === 1 ? await UserInformation(phoneNumber) : parseInt(inputs[0]) === 2 ? await GenerateRandomPassword(phoneNumber) : response = `END Invalid Input.`
-            }
-
-        setTimeout(() =>{ res.send(response).end() },   4000)
+            text === '' ? await DisplayHomeScreen(phoneNumber) : text !== '' ? await DisplaySecondScreen(phoneNumber) : console.log(`FATAL ERROR`)
+                setTimeout(() =>{ res.send(response).end() },4000)
     })
 
 module.exports = router;
 
 const
-    DisplayHomeScreen = async Phonenumber =>{
-        await client.query(`SELECT * FROM patienttable`, (err, result) =>{
-            err ? console.log(err) : result.rows.forEach( User => Phonenumber === User.phonenumber ? response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password.` : response = `END ${Phonenumber} is not a registered user.`)
-        })
+    DisplaySecondScreen = async Phonenumber =>{
+        inputs = text.split('*')
+            if (inputs.length > 0) parseInt(inputs[0]) === 1 ? await UserInformation(Phonenumber) : parseInt(inputs[0]) === 2 ? await GenerateRandomPassword(Phonenumber) : response = `END Invalid Input.`
     },
+    DisplayHomeScreen = async Phonenumber => await client.query(`SELECT * FROM patienttable`, (err, result) =>{
+        err ? console.log(err) :
+            result.rows.forEach( User => Phonenumber === User.phonenumber ? response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password.` : response = `END ${Phonenumber} is not a registered user.`)}
+    ),
     UserInformation = async Phonenumber =>{
         response = `CON 1. View Medical History. \n 2. View Personal Information. \n 3. Edit PIN.`
             if (inputs.length > 0){
@@ -54,28 +50,26 @@ const
                          parseInt(inputs[2]) !== parseInt(User.patientpassword) ? response = `END PIN MisMatch.` : response = `END Unknown Input.`)
             })
     },
-    GenerateRandomPassword = async Phonenumber =>{
-        await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
-            err ? console.log(err) :
-                result.rows.forEach( User =>{
-                    client.query(`SELECT * FROM randompassword WHERE patientid = ${User.patientid}`, (err,result) =>{
-                        if (err) console.log(err)
-                            else {
-                                if (result.rows.length === 0){
-                                    response = `CON Enter Your PIN.`
-                                        if (inputs.length > 1){
-                                            if (parseInt(inputs[1]) === parseInt(User.patientpassword)) {
-                                                client.query(`INSERT INTO randompassword(randompasswordid, randompassword, patientid) VALUES(1, '${unique_id}', '${User.patientid}')`, err => err ? console.log(err) :
-                                                    SendMessage(`Your Requested Temporary password is ${unique_id}.`,`'${Phonenumber}'`) )
-                                                response = `END Your Temporary password is ${unique_id}. A copy has been sent to ${Phonenumber} via SMS.`
-                                            } else if (parseInt(inputs[1]) !== parseInt(User.patientpassword)) response = `END PIN MisMatch.`
-                                        }
-                                } else if (result.rows.length !== 0) response = `END Cannot Generate New Temporary Password Until Your Current Session is finished.`
-                            }
-                    })
+    GenerateRandomPassword = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
+        err ? console.log(err) :
+            result.rows.forEach( User =>{
+                client.query(`SELECT * FROM randompassword WHERE patientid = ${User.patientid}`, (err,result) =>{
+                    if (err) console.log(err)
+                        else {
+                            if (result.rows.length === 0){
+                                response = `CON Enter Your PIN.`
+                                    if (inputs.length > 1){
+                                        if (parseInt(inputs[1]) === parseInt(User.patientpassword)) {
+                                            client.query(`INSERT INTO randompassword(randompasswordid, randompassword, patientid) VALUES(1, '${unique_id}', '${User.patientid}')`, err => err ? console.log(err) :
+                                                SendMessage(`Your Requested Temporary password is ${unique_id}.`,`'${Phonenumber}'`) )
+                                                    response = `END Your Temporary password is ${unique_id}. A copy has been sent to ${Phonenumber} via SMS.`
+                                        } else if (parseInt(inputs[1]) !== parseInt(User.patientpassword)) response = `END PIN MisMatch.`
+                                    }
+                            } else if (result.rows.length !== 0) response = `END Cannot Generate New Temporary Password Until Your Current Session is finished.`
+                        }
                 })
-        })
-    },
+            })
+        }),
     UpdatePIN = async Phonenumber =>{
         response = `CON Enter Your Current PIN.`
             if (inputs.length > 2){
