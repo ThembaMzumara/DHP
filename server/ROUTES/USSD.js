@@ -25,8 +25,7 @@ const
             if (inputs.length > 0) parseInt(inputs[0]) === 1 ? await UserInformation(Phonenumber) : parseInt(inputs[0]) === 2 ? await GenerateRandomPassword(Phonenumber) : response = `END Invalid Input.`
     },
     DisplayHomeScreen = async Phonenumber => await client.query(`SELECT * FROM patienttable`, (err, result) =>{
-        err ? console.log(err) : result.rows.forEach( User => Phonenumber === User.phonenumber ? response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password.` : response = `END ${Phonenumber} is not a registered user.`)}
-    ),
+        err ? console.log(err) : result.rows.forEach( User => Phonenumber === User.phonenumber ? response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password.` : response = `END ${Phonenumber} is not a registered user.`)} ),
     UserInformation = async Phonenumber =>{
         response = `CON 1. View Medical History. \n 2. View Personal Information. \n 3. Edit PIN.`
             if (inputs.length > 0){
@@ -39,15 +38,14 @@ const
         response = `CON Enter Your PIN.`
             if (inputs.length > 2) await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>
                 err ? console.log(err) : result.rows.forEach( User => parseInt(inputs[2]) === parseInt(User.patientpassword) ? response = `END Medical History.` :
-                     parseInt(inputs[2]) !== parseInt(User.patientpassword) ? response = `END PIN MisMatch.` : response = `END Unknown Error.`))
+                     parseInt(inputs[2]) !== parseInt(User.patientpassword) ? response = `END PIN MisMatch.` : response = `END Unknown Error.`) )
     },
     DisplayUserData = async Phonenumber =>{
         response = `CON Enter Your Pin`
             if (inputs.length > 2) await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
                 err ? console.log(err) :
                     result.rows.forEach( User => parseInt(inputs[2]) === parseInt(User.patientpassword) ? response = `END ${Phonenumber} is registered under \n Fullname: ${User.patientname} \n Sex: ${User.gender} \n Blood Group: ${User.bloodgroup.toUpperCase()} \n Location: ${User.locationcol} \n Date of Birth: ${User.date} .` :
-                         parseInt(inputs[2]) !== parseInt(User.patientpassword) ? response = `END PIN MisMatch.` : response = `END Unknown Input.`)
-            })
+                         parseInt(inputs[2]) !== parseInt(User.patientpassword) ? response = `END PIN MisMatch.` : response = `END Unknown Input.`) })
     },
     GenerateRandomPassword = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
         err ? console.log(err) :
@@ -90,5 +88,4 @@ const
                         } else if (parseInt(inputs[2]) !== parseInt(User.patientpassword)) response = `END PIN MisMatch`
                     })
             })
-
     };
