@@ -5,6 +5,7 @@ const
     client = require('../MODULES/database'),
     SendMessage = require('../MODULES/SMS'),
     unique_id = require('../MODULES/uuid'),
+    Data = [],
     router = express.Router();
 
 router
@@ -41,7 +42,7 @@ const
                         response = `CON Please Select: \n 1. Last Medical Record \n 2. Previous 10 Medical Records \n 3. All Medical History.`
                             if (inputs.length > 3)
                                 parseInt(inputs[3]) === 1 ? GetLastVisit(Phonenumber) : parseInt(inputs[3]) === 2 ? GetLastTenVisits(Phonenumber) : parseInt(inputs[3]) === 3 ? GetAllMedicalHistory() : response = `END Invalid Input. Try Again.`
-                    } else if (hash(parseInt(inputs[2])) !== User.patientpassword) response = `END PIN MisMatch. \n Please Try Again.`
+                    } else if (hash(parseInt(inputs[2])) !== User.patientpassword) response = `END PIN MisMatch. Please Try Again.`
                 })
             )
     },
@@ -49,7 +50,7 @@ const
         response = `CON Enter Your Pin`
             if (inputs.length > 2) await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
                 err ? console.error(err) : result.rows.forEach( User => hash(parseInt(inputs[2])) === User.patientpassword ? response = `END ${Phonenumber} is registered under \n Fullname: ${User.patientname} \n Gender: ${User.gender} \n Blood Group: ${User.bloodgroup.toUpperCase()} \n Location: ${User.locationcol} \n Date of Birth: ${User.date} .` :
-                     hash(parseInt(inputs[2])) !== User.patientpassword ? response = `END PIN MisMatch. \n Please Try Again.` : response = `END Unknown Input.`) })
+                     hash(parseInt(inputs[2])) !== User.patientpassword ? response = `END PIN MisMatch. Please Try Again.` : response = `END Unknown Input.`) })
     },
     UpdatePIN = async Phonenumber =>{
         response = `CON Enter Your Current PIN.`
@@ -66,7 +67,7 @@ const
                                         } })
                                 else if (parseInt(inputs[3].length) < 4) response = `END A minimum of 4 numbers is required to register a new PIN. Try Again.`
                             }
-                    } else if (hash(parseInt(inputs[2])) !== User.patientpassword) response = `END PIN MisMatch. \n Please Try Again.`
+                    } else if (hash(parseInt(inputs[2])) !== User.patientpassword) response = `END PIN MisMatch. Please Try Again.`
                 })
             })
     },
@@ -74,27 +75,36 @@ const
     GetLastVisit = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
         err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
             err ? console.error(err) : result.rows.forEach( chunk =>{
-                MedicalHistory = chunk.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
-                    SendMessage(`Last time you visited the Hospital, on ${MedicalHistory[0].resultdate}, you were diagnosed with ${MedicalHistory[0].docresult}. Your Doctor suggested you ${MedicalHistory[0].suggestions}.`,`${Phonenumber}`)
-                        response = `END Last time you visited the Hospital, on ${MedicalHistory[0].resultdate}, you were diagnosed with ${MedicalHistory[0].docresult}. Your Doctor suggested you ${MedicalHistory[0].suggestions}.`
+                if (chunk.length !== 0){
+                    Data.push(chunk)
+                        MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
+                            SendMessage(`Last time you visited the Hospital, on ${MedicalHistory[0].resultdate}, you were diagnosed with ${MedicalHistory[0].docresult}. Your Doctor suggested you ${MedicalHistory[0].suggestions}.`,`${Phonenumber}`)
+                                response = `END Last time you visited the Hospital, on ${MedicalHistory[0].resultdate}, you were diagnosed with ${MedicalHistory[0].docresult}. Your Doctor suggested you ${MedicalHistory[0].suggestions}.`
+                } else if (chunk.length === 0) response = `END No Records found. Data will be displayed when you visit a hospital.`
             })
         }) )
     }),
     GetLastTenVisits = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
         err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
             err ? console.error(err) : result.rows.forEach( chunk =>{
-                MedicalHistory = chunk.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
-                    SendMessage(``,`${Phonenumber}`)
-                        response = `END .`
+                if (chunk.length !== 0){
+                    Data.push(chunk)
+                        MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? 1 : -1)
+                            SendMessage(``,`${Phonenumber}`)
+                                response = `END .`
+                } else if (chunk.length === 0) response = `END No Records found. Data will be displayed when you visit a hospital.`
             })
         }) )
     }),
     GetAllMedicalHistory = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
         err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
             err ? console.error(err) : result.rows.forEach( chunk =>{
-                MedicalHistory = chunk.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
-                    SendMessage(``,`${Phonenumber}`)
-                        response = `END .`
+                if (chunk.length !== 0){
+                    Data.push(chunk)
+                        MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? 1 : -1)
+                            SendMessage(``,`${Phonenumber}`)
+                                response = `END .`
+                } else if (chunk.length === 0) response = `END No Records found. Data will be displayed when you visit a hospital.`
             })
         }) )
     }),
@@ -119,7 +129,7 @@ const
                                                     response = `Your New Temporary password is ${unique_id}. A copy has been sent to ${Phonenumber} Via SMS.`
                                             }
                                     }) : console.error(err)
-                                else if (hash(parseInt(inputs[1])) !== User.patientpassword) response = `END PIN MisMatch. \n Please Try Again.`
+                                else if (hash(parseInt(inputs[1])) !== User.patientpassword) response = `END PIN MisMatch. Please Try Again.`
                             } } )
                 }) : Data.length !== 0 ? response = `END It appears ${Phonenumber} already has an active Session.` : console.error(err)
             })
