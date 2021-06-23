@@ -1,4 +1,4 @@
-let response, inputs;
+let response, inputs, MedicalHistory;
 const
     express = require('express'),
     hash = require('md5'),
@@ -70,10 +70,34 @@ const
                 })
             })
     },
-    HelpData = async () => response = `END Welcome to Your Mobile Personal Helper \n  \n For Further Help Call \n 1. +265 000 000 001. \n 2. +265 000 000 002.`,
-    GetLastVisit = async Phonenumber => client.query(),
-    GetLastTenVisits = async Phonenumber => client.query(),
-    GetAllMedicalHistory = async Phonenumber => client.query(),
+    HelpData = async () => response = `END Welcome to Your Personal Mobile Helper \n  \n For Further Help Call \n 1. +265 000 000 001. \n 2. +265 000 000 002.`,
+    GetLastVisit = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
+        err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
+            err ? console.error(err) : result.rows.forEach( chunk =>{
+                MedicalHistory = chunk.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
+                    SendMessage(`Last time you visited the Hospital, on ${MedicalHistory[0].resultdate}, you were diagnosed with ${MedicalHistory[0].docresult}. Your Doctor suggested you ${MedicalHistory[0].suggestions}.`,`${Phonenumber}`)
+                        response = `END Last time you visited the Hospital, on ${MedicalHistory[0].resultdate}, you were diagnosed with ${MedicalHistory[0].docresult}. Your Doctor suggested you ${MedicalHistory[0].suggestions}.`
+            })
+        }) )
+    }),
+    GetLastTenVisits = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
+        err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
+            err ? console.error(err) : result.rows.forEach( chunk =>{
+                MedicalHistory = chunk.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
+                    SendMessage(``,`${Phonenumber}`)
+                        response = `END .`
+            })
+        }) )
+    }),
+    GetAllMedicalHistory = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
+        err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
+            err ? console.error(err) : result.rows.forEach( chunk =>{
+                MedicalHistory = chunk.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
+                    SendMessage(``,`${Phonenumber}`)
+                        response = `END .`
+            })
+        }) )
+    }),
     GenerateRandomPassword = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
         err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM sessiontable WHERE patientid = '${User.patientid}'`, (err, result) =>{
             err ? console.error(err) : result.rows.forEach( Data =>{
@@ -101,26 +125,22 @@ const
             })
         }) )
     })
-    // ,GenerateRandomPassword = async Phonenumber =>{
-    //     await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
-    //         err ? console.log(err) :
-    //             result.rows.forEach( User =>{
-    //                 client.query(`SELECT * FROM randompassword WHERE patientid = ${User.patientid}`, (err,result) =>{
-    //                     if (err) console.log(err)
-    //                     else {
-    //                         if (result.rows.length === 0){
-    //                             response = `CON Enter Your PIN.`
-    //                             if (inputs.length > 1){
-    //                                 if (hash(parseInt(inputs[1])) === User.patientpassword) {
-    //                                     client.query(`INSERT INTO randompassword(randompasswordid, randompassword, patientid) VALUES(1, '${unique_id}', '${User.patientid}')`, err => err ? console.log(err) :
-    //                                         SendMessage(`Your Requested Temporary password is ${unique_id}.`,`'${Phonenumber}'`) )
-    //                                     response = `END Your Temporary password is ${unique_id}. A copy has been sent to ${Phonenumber} via SMS.`
-    //                                 } else if (parseInt(inputs[1]) !== parseInt(User.patientpassword)) response = `END PIN MisMatch.`
-    //                             }
-    //                         } else if (result.rows.length !== 0) response = `END Cannot Generate New Temporary Password Until Your Current Session is finished.`
+    // GenerateRandomPassword = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
+    //     err ? console.log(err) : result.rows.forEach( User => client.query(`SELECT * FROM randompassword WHERE patientid = ${User.patientid}`, (err,result) =>{
+    //         if (err) console.log(err)
+    //             else {
+    //                 if (result.rows.length === 0){
+    //                     response = `CON Enter Your PIN.`
+    //                     if (inputs.length > 1){
+    //                         if (hash(parseInt(inputs[1])) === User.patientpassword) {
+    //                             client.query(`INSERT INTO randompassword(randompasswordid, randompassword, patientid) VALUES(1, '${unique_id}', '${User.patientid}')`, err => err ? console.log(err) :
+    //                                 SendMessage(`Your Requested Temporary password is ${unique_id}.`,`'${Phonenumber}'`) )
+    //                             response = `END Your Temporary password is ${unique_id}. A copy has been sent to ${Phonenumber} via SMS.`
+    //                         } else if (parseInt(inputs[1]) !== parseInt(User.patientpassword)) response = `END PIN MisMatch.`
     //                     }
-    //                 })
-    //             })
-    //     })
-    // }
-;
+    //                 } else if (result.rows.length !== 0) response = `END Cannot Generate New Temporary Password Until Your Current Session is finished.`
+    //             }
+    //         })
+    //     )
+    // })
+    ;
