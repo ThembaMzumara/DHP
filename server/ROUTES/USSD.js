@@ -28,8 +28,11 @@ router
 module.exports = router;
 
 const
-    DisplayWelcomeScreen = async Phonenumber => await client.query(`SELECT * FROM patienttable`, (err, result) =>{
-        err ? console.error(err) : result.rows.forEach( User => Phonenumber === User.phonenumber ? response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password. \n 3. Help.` : response = `END ${Phonenumber} is not a registered user.`)} ),
+    DisplayWelcomeScreen = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
+        err ? console.error(err) : result.rows.forEach( User =>{
+            if (User.length !== 0) response = `CON Welcome to Digital Health Passport Mobile View. Select your action. \n\n 1. View and Edit User Information. \n 2. Generate Random Password. \n 3. Help.`
+                else if (User.length === 0) response =`END ${Phonenumber} is not a registered user.` })
+    }),
     DisplaySecondOptions = async Phonenumber =>{
         response = `CON 1. View Medical History. \n 2. View Personal Information. \n 3. Edit PIN. `
             if (inputs.length > 1) parseInt(inputs[1]) === 1  ? await DisplayMedicalHistory(Phonenumber) : parseInt(inputs[1]) === 2 ? await DisplayUserData(Phonenumber) : parseInt(inputs[1]) === 3 ? await UpdatePIN(Phonenumber) : response = `END Invalid Option.`
@@ -41,7 +44,7 @@ const
                     if (hash(parseInt(inputs[2])) === User.patientpassword){
                         response = `CON Please Select: \n 1. Last Medical Record \n 2. Previous Five Medical Records \n 3. All Medical History.`
                             if (inputs.length > 3)
-                                parseInt(inputs[3]) === 1 ? GetLastVisit(Phonenumber) : parseInt(inputs[3]) === 2 ? GetLastFiveVisits(Phonenumber) : parseInt(inputs[3]) === 3 ? GetAllMedicalHistory() : response = `END Invalid Input. Try Again.`
+                                parseInt(inputs[3]) === 1 ? GetLastVisit(Phonenumber) : parseInt(inputs[3]) === 2 ? GetLastFiveVisits(Phonenumber) : parseInt(inputs[3]) === 3 ? GetAllMedicalHistory(Phonenumber) : response = `END Invalid Input. Try Again.`
                     } else if (hash(parseInt(inputs[2])) !== User.patientpassword) response = `END PIN MisMatch. Please Try Again.`
                 })
             )
@@ -65,38 +68,37 @@ const
                                             SendMessage(`PIN updated successfully. Your New PIN is ${inputs[3]}.`,`${Phonenumber}`)
                                                 response = `END PIN Updated successfully. Your New PIN has been Sent to ${Phonenumber} via SMS.`
                                         } })
-                                else if (parseInt(inputs[3].length) < 4) response = `END A minimum of 4 numbers is required to register a new PIN. Try Again.`
+                                else if (parseInt(inputs[3].length) < 4) response = `END A minimum of 4 numbers is required to register a new PIN. Please Try Again.`
                             }
                     } else if (hash(parseInt(inputs[2])) !== User.patientpassword) response = `END PIN MisMatch. Please Try Again.`
                 })
             })
     },
-    HelpData = async () => response = `END Welcome to Your Personal Mobile Helper \n  \n For Further Help Call \n 1. +265 000 000 001. \n 2. +265 000 000 002.`,
+    HelpData = async () => response = `END Welcome to Your Personal Mobile Helper \n 
+        Here you find a list of helper rules you may need to help you run the application. \n 
+            1. If you want to edit your PIN, it needs to have characters more than 4 and please try to remember it for once forgotten, renewal can only be done at the hospital. \n 
+                2.    \n 
+                    For Further Help Call \n 1. +265 000 000 001. \n 2. +265 000 000 002.`,
     GetLastVisit = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
         err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
             err ? console.error(err) : result.rows.forEach( chunk =>{
                 if (chunk.length !== 0){
                     Data.push(chunk)
                         MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
-                            SendMessage(`...Medical History Report... \n Last visit: ${MedicalHistory[0].resultdate}. \n Diagnosis: ${MedicalHistory[0].docresult}. \n Doctor's suggestions: ${MedicalHistory[0].suggestions}.`,`${Phonenumber}`)
+                            SendMessage(`\n...Medical History Report... \n Last visit: ${MedicalHistory[0].resultdate}. \n Diagnosis: ${MedicalHistory[0].docresult}. \n Doctor's suggestions: ${MedicalHistory[0].suggestions}.`,`${Phonenumber}`)
                                 response = `END ...Medical History Report... \n Last visit: ${MedicalHistory[0].resultdate}. \n Diagnosis: ${MedicalHistory[0].docresult}. \n Doctor's suggestions: ${MedicalHistory[0].suggestions}.`
                 } else if (chunk.length === 0) response = `END No Records found. Data will be displayed when you have visited a hospital and are diagnosed.`
             })
-        }) )
+        }))
     }),
     GetLastFiveVisits = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
         err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
             err ? console.error(err) : result.rows.forEach( chunk =>{
                 if (chunk.length !== 0){
                     Data.push(chunk)
-                        MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? 1 : -1)
-                            SendMessage(`...Medical History Report... \n
-                                Last visit: ${MedicalHistory[0].resultdate}. \n Diagnosis: ${MedicalHistory[0].docresult}. \n Doctor's suggestions: ${MedicalHistory[0].suggestions}. \n\n 
-                                    Last visit: ${MedicalHistory[1].resultdate}. \n Diagnosis: ${MedicalHistory[1].docresult}. \n Doctor's suggestions: ${MedicalHistory[1].suggestions}. \n\n 
-                                        Last visit: ${MedicalHistory[2].resultdate}. \n Diagnosis: ${MedicalHistory[2].docresult}. \n Doctor's suggestions: ${MedicalHistory[2].suggestions}. \n\n 
-                                            Last visit: ${MedicalHistory[3].resultdate}. \n Diagnosis: ${MedicalHistory[3].docresult}. \n Doctor's suggestions: ${MedicalHistory[3].suggestions}. \n\n 
-                                                Last visit: ${MedicalHistory[4].resultdate}. \n Diagnosis: ${MedicalHistory[4].docresult}. \n Doctor's suggestions: ${MedicalHistory[4].suggestions}.`,`${Phonenumber}`)
-                                                    response = `END Your Previous Five Hospital Records are sent to ${Phonenumber} via SMS.`
+                        MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
+                            MedicalHistory.forEach( data => SendMessage(`...Medical History Report... \n Last visit: ${data.resultdate}. \n Diagnosis: ${data.docresult}. \n Doctor's suggestions: ${data.suggestions}.`,`${Phonenumber}`))
+                                response = `END Your Previous Five Hospital Records are sent to ${Phonenumber} via SMS.`
                 } else if (chunk.length === 0) response = `END No Records found. Data will be displayed when you have visited a hospital and are diagnosed.`
             })
         }) )
@@ -106,8 +108,8 @@ const
             err ? console.error(err) : result.rows.forEach( chunk =>{
                 if (chunk.length !== 0){
                     Data.push(chunk)
-                        MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? 1 : -1)
-                            SendMessage(``,`${Phonenumber}`)
+                        MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
+                            MedicalHistory.forEach( data => SendMessage(`...Medical History Report... \n Last visit: ${data.resultdate}. \n Diagnosis: ${data.docresult}. \n Doctor's suggestions: ${data.suggestions}.`,`${Phonenumber}`))
                                 response = `END All Your Previous Medical Records are sent to ${Phonenumber} via SMS.`
                 } else if (chunk.length === 0) response = `END No Records found. Data will be displayed when you have visited a hospital and are diagnosed.`
             })
