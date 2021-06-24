@@ -17,12 +17,12 @@ router
 
             if (text === '') await DisplayWelcomeScreen(phoneNumber)
 
-            if (text !== ''){
-                inputs = text.split('*')
-                    if (inputs.length > 0)
-                        parseInt(inputs[0]) === 1 ? await DisplaySecondOptions(phoneNumber) : parseInt(inputs[0]) === 2 ? await GenerateRandomPassword(phoneNumber) : parseInt(inputs[0]) === 3 ? await HelpData() : response = `END Invalid Input.`
-            }
-                setTimeout(() => res.send(response).end() ,4000)
+                if (text !== ''){
+                    inputs = text.split('*')
+                        if (inputs.length > 0)
+                            parseInt(inputs[0]) === 1 ? await DisplaySecondOptions(phoneNumber) : parseInt(inputs[0]) === 2 ? await GenerateRandomPassword(phoneNumber) : parseInt(inputs[0]) === 3 ? await HelpData() : response = `END Invalid Input.`
+                }
+                    setTimeout(() => res.send(response).end() ,4000)
     })
 
 module.exports = router;
@@ -76,40 +76,40 @@ const
     },
     HelpData = async () => response = `END Welcome to Your Personal Mobile Helper \n 
         Here you find a list of helper rules you may need to help you run the application. \n 
-            1. If you want to edit your PIN, it needs to have characters more than 4 and please try to remember it for once forgotten, renewal can only be done at the hospital. \n 
-                2.    \n 
+            1. If you want to edit your PIN, it needs to have characters more than 4 and please try to remember it for once forgotten, renewal can only be done at the hospital by the system administrator. \n 
+                2. .\n 
                     For Further Help Call \n 1. +265 000 000 001. \n 2. +265 000 000 002.`,
     GetLastVisit = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
-        err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
+        err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT doctorresults.resultdate, vitals.temperature, vitals.heartbeat, vitals.weight, doctorresults.docresult, doctorresults.suggestions, pharmacy.drug FROM patienttable, doctorresults, vitals, pharmacy WHERE patienttable.patientid = '${User.patientid}'`, (err, result) =>{
             err ? console.error(err) : result.rows.forEach( chunk =>{
                 if (chunk.length !== 0){
                     Data.push(chunk)
                         MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
-                            SendMessage(`\n...Medical History Report... \n Last visit: ${MedicalHistory[0].resultdate}. \n Diagnosis: ${MedicalHistory[0].docresult}. \n Doctor's suggestions: ${MedicalHistory[0].suggestions}.`,`${Phonenumber}`)
+                            SendMessage(`\n...Medical History Report... \n Last visit: ${MedicalHistory[0].resultdate}. \n Vitals: Temperature : ${MedicalHistory[0].temperature}, HeartBeat: ${MedicalHistory[0].heatbeat}, Weight: ${MedicalHistory[0].weight} \n Diagnosis: ${MedicalHistory[0].docresult}. \n Doctor's suggestions: ${MedicalHistory[0].suggestions}.`,`${Phonenumber}`)
                                 response = `END ...Medical History Report... \n Last visit: ${MedicalHistory[0].resultdate}. \n Diagnosis: ${MedicalHistory[0].docresult}. \n Doctor's suggestions: ${MedicalHistory[0].suggestions}.`
                 } else if (chunk.length === 0) response = `END No Records found. Data will be displayed when you have visited a hospital and are diagnosed.`
             })
         }))
     }),
     GetLastFiveVisits = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
-        err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
+        err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT doctorresults.resultdate, vitals.temperature, vitals.heartbeat, vitals.weight, doctorresults.docresult, doctorresults.suggestions, pharmacy.drug FROM patienttable, doctorresults, vitals, pharmacy WHERE patienttable.patientid = '${User.patientid}'`, (err, result) =>{
             err ? console.error(err) : result.rows.forEach( chunk =>{
                 if (chunk.length !== 0){
                     Data.push(chunk)
                         MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
-                            MedicalHistory.forEach( data => SendMessage(`...Medical History Report... \n Last visit: ${data.resultdate}. \n Diagnosis: ${data.docresult}. \n Doctor's suggestions: ${data.suggestions}.`,`${Phonenumber}`))
+                            MedicalHistory.forEach( data => SendMessage(`\n...Medical History Report... \n Last visit: ${data.resultdate}. \n Vitals: Temperature : ${data.temperature}, HeartBeat: ${data.heatbeat}, Weight: ${data.weight} \n Diagnosis: ${data.docresult}. \n Doctor's suggestions: ${data.suggestions}.`,`${Phonenumber}`))
                                 response = `END Your Previous Five Hospital Records are sent to ${Phonenumber} via SMS.`
                 } else if (chunk.length === 0) response = `END No Records found. Data will be displayed when you have visited a hospital and are diagnosed.`
             })
         }) )
     }),
     GetAllMedicalHistory = async Phonenumber => await client.query(`SELECT * FROM patienttable WHERE phonenumber = '${Phonenumber}'`, (err, result) =>{
-        err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT * FROM doctorresults WHERE patientid = '${User.patientid}'`, (err, result) =>{
+        err ? console.error(err) : result.rows.forEach( User => client.query(`SELECT doctorresults.resultdate, vitals.temperature, vitals.heartbeat, vitals.weight, doctorresults.docresult, doctorresults.suggestions, pharmacy.drug FROM patienttable, doctorresults, vitals, pharmacy WHERE patienttable.patientid = '${User.patientid}'`, (err, result) =>{
             err ? console.error(err) : result.rows.forEach( chunk =>{
                 if (chunk.length !== 0){
                     Data.push(chunk)
                         MedicalHistory = Data.sort((a, b) => a.docresultid > b.docresultid ? -1 : 1)
-                            MedicalHistory.forEach( data => SendMessage(`...Medical History Report... \n Last visit: ${data.resultdate}. \n Diagnosis: ${data.docresult}. \n Doctor's suggestions: ${data.suggestions}.`,`${Phonenumber}`))
+                            MedicalHistory.forEach( data => SendMessage(`\n...Medical History Report... \n Last visit: ${data.resultdate}. \n Vitals: Temperature : ${data.temperature}, HeartBeat: ${data.heatbeat}, Weight: ${data.weight} \n Diagnosis: ${data.docresult}. \n Doctor's suggestions: ${data.suggestions}.`,`${Phonenumber}`))
                                 response = `END All Your Previous Medical Records are sent to ${Phonenumber} via SMS.`
                 } else if (chunk.length === 0) response = `END No Records found. Data will be displayed when you have visited a hospital and are diagnosed.`
             })
